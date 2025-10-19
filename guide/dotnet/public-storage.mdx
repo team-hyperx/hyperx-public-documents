@@ -1,0 +1,127 @@
+---
+title: "공개 스토리지"
+description: "콘솔에서 업로드한 대용량 파일을 클라이언트에서 쉽게 검증하고 다운로드 받을 수 있습니다."
+icon: "box-open"
+---
+
+## 파일 정보 조회
+
+```cs
+await HyperX.Core.PublicStorage.GetMeta("파일명");
+```
+
+- 파일의 개요(메타 정보)를 조회합니다.
+- `GetMeta` 함수는 `Task<ObjectMeta>`를 반환합니다.
+  - `ObjectMeta`는 다음과 같이 이루어진 구조체입니다.
+  ```cs
+  public readonly struct ObjectMeta
+  {
+      public readonly string Hash; // 파일의 해시 코드 (파일의 내용이 변경될 때 마다 바뀌는 값)
+      public readonly string Type; // 파일의 MIME 타입 (예시: "image/png")
+      public readonly long Size; // byte 단위의 파일 크기
+      public readonly DateTimeOffset UpdatedAt; // 파일의 최종 업데이트 시각
+  }
+  ```
+
+## 파일 해시 코드 조회
+
+```cs
+await HyperX.Core.PublicStorage.GetHash("파일명");
+```
+
+- 파일의 해시코드만 필요한 경우에는 `GetMeta` 함수 대신, `GetHash` 함수를 이용하여 해시 코드만 빠르게 가져올 수 있습니다.
+- `GetHash` 함수는 `Task<string>`을 반환합니다.
+
+## 파일 다운로드
+
+### 메모리에 파일 내용을 다운로드
+```cs
+HyperX.Core.PublicStorage.Get("파일명");
+```
+
+### 스토리지에 파일 내용을 다운로드
+```cs
+HyperX.Core.PublicStorage.Get("파일명", "저장경로");
+```
+
+### 상세 설명
+
+- 파일의 실제 내용을 다운로드 받습니다.
+- `Get` 함수는 `Task<FileDownloadProgress>`를 반환합니다.
+  - `FileDownloadProgress`는 다음과 같이 이루어진 클래스입니다.
+  ```cs
+  public class FileDownloadProgress
+  {
+      public Task<byte[]> File; // 파일의 내용
+      public double Progress; // 파일 다운로드의 진행 정도를 0부터 100까지의 값으로 나타냅니다.
+      public FileDownloadStatus Status; // 파일 다운로드 작업의 상태를 나타냅니다.
+  }
+  ```
+  ```cs
+  public enum FileDownloadStatus
+  {
+      PENDING = 0,
+      IN_PROGRESS = 1,
+      COMPLETE = 2,
+      FAILURE = 3
+  }
+  ```
+- `Get`에 두번째 인자로 파일이 저장될 경로를 지정하면, 다운로드 작업이 완료되어도 `File` 객체의 값은 `null`입니다.
+  - 단, 파일 다운로드가 완료된 경우 Task 자체는 완료됩니다.
+- Unity 환경에서 저장경로를 지정 하는 경우, `Application.persistentDataPath` 이하 경로에 파일이 다운로드 됩니다.
+
+## Unity 코드 예시
+
+다음은 Unity에서 파일의 다운로드 여부를 확인하고, 파일을 다운로드 받아 사용하는 예시를 보여줍니다.
+
+```cs
+using System.IO;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Sandbox : MonoBehaviour
+{
+    public Image imageComponent;
+
+    private HyperX.Http.FileDownloadProgress fileDownloadProgress;
+
+    async void Start()
+    {
+        string fileName = "hyperx.png";
+        string downloadPath = "/AdditionalAssets/hyperx.png";
+
+        string serverHash = await HyperX.Core.PublicStorage.GetHash(fileName);
+        string localHash = PlayerPrefs.GetString($"DOWNLOADED_FILE_HASH:{fileName}");
+        if (serverHash == localHash)
+        {
+            Debug.Log("이미 최신 파일이 다운로드 되어있습니다.");
+        }
+        else
+        {
+            Debug.Log("파일 다운로드를 시작합니다.");
+            fileDownloadProgress = HyperX.Core.PublicStorage.Get("hyperx.png", downloadPath);
+            await fileDownloadProgress.File;
+            PlayerPrefs.SetString($"DOWNLOADED_FILE_HASH:{fileName}", serverHash);
+            Debug.Log("파일 다운로드가 완료되었습니다.");
+        }
+
+        byte[] imageByte = File.ReadAllBytes(Application.persistentDataPath + downloadPath);
+        Texture2D texture = new Texture2D(200, 200);
+        texture.LoadImage(imageByte);
+        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        imageComponent.sprite = sprite;
+    }
+
+    void Update()
+    {
+        if (
+            fileDownloadProgress != null
+            && fileDownloadProgress.Status == HyperX.Http.FileDownloadStatus.IN_PROGRESS
+        )
+        {
+            Debug.Log($"파일 다운로드 진행 상태: {fileDownloadProgress.Progress}%");
+        }
+    }
+}
+```
+

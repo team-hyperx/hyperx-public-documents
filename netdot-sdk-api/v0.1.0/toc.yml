@@ -1,0 +1,46 @@
+### YamlMime:TableOfContent
+- name: HyperX
+  href: HyperX.md
+  items:
+  - name: Classes
+  - name: Constant
+    href: HyperX.Constant.md
+  - name: Core
+    href: HyperX.Core.md
+  - name: HyperXSystem
+    href: HyperX.HyperXSystem.md
+  - name: Project
+    href: HyperX.Project.md
+  - name: Enums
+  - name: RuntimeEnvironmentType
+    href: HyperX.RuntimeEnvironmentType.md
+- name: HyperX.Http
+  href: HyperX.Http.md
+  items:
+  - name: Classes
+  - name: Client
+    href: HyperX.Http.Client.md
+  - name: File
+    href: HyperX.Http.File.md
+  - name: FileDownloadProgress
+    href: HyperX.Http.FileDownloadProgress.md
+  - name: Project
+    href: HyperX.Http.Project.md
+  - name: Service
+    href: HyperX.Http.Service.md
+  - name: Storage
+    href: HyperX.Http.Storage.md
+  - name: Storage.ObjectMetaResponse
+    href: HyperX.Http.Storage.ObjectMetaResponse.md
+  - name: Structs
+  - name: Storage.ObjectMeta
+    href: HyperX.Http.Storage.ObjectMeta.md
+  - name: Enums
+  - name: FileDownloadStatus
+    href: HyperX.Http.FileDownloadStatus.md
+- name: HyperX.Storage
+  href: HyperX.Storage.md
+  items:
+  - name: Classes
+  - name: PublicStorage
+    href: HyperX.Storage.PublicStorage.md
