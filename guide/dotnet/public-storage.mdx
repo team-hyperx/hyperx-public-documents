@@ -53,6 +53,8 @@ HyperX.Core.PublicStorage.Get("파일명", "저장경로");
   public class FileDownloadProgress
   {
       public Task<byte[]> File; // 파일의 내용
+      public long FileSize; // 파일 전체 크기 (단위: byte)
+      public long DownloadedSize; // 현재까지 다운로드 된 파일 크기 (단위: byte)
       public double Progress; // 파일 다운로드의 진행 정도를 0부터 100까지의 값으로 나타냅니다.
       public FileDownloadStatus Status; // 파일 다운로드 작업의 상태를 나타냅니다.
   }
